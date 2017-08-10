@@ -1,0 +1,1 @@
+python train.py --hypes hypes/lstm_rezoom.json  --gpu 0 --logdir output
