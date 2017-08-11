@@ -488,7 +488,7 @@ def train(H, test_images):
 
         # train model for N iterations
         start = time.time()
-        max_iter = H['solver'].get('max_iter', 800000)
+        max_iter = H['solver'].get('max_iter', 100000)
         for i in xrange(max_iter):
             display_iter = H['logging']['display_iter']
             adjusted_lr = (H['solver']['learning_rate'] *
@@ -538,7 +538,7 @@ def main():
     args = parser.parse_args()
     
     # constraint GPU memory use
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     
     with open(args.hypes, 'r') as f:
