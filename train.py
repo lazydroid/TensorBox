@@ -488,7 +488,7 @@ def train(H, test_images):
 
         # train model for N iterations
         start = time.time()
-        max_iter = H['solver'].get('max_iter', 100000)
+        max_iter = H['solver'].get('max_iter', 800000)
         for i in xrange(max_iter):
             display_iter = H['logging']['display_iter']
             adjusted_lr = (H['solver']['learning_rate'] *
@@ -535,6 +535,7 @@ def main():
     parser.add_argument('--hypes', required=True, type=str)
     parser.add_argument('--max_iter', required=False, type=int, default=None)
     parser.add_argument('--logdir', default='output', type=str)
+
     args = parser.parse_args()
     
     # constraint GPU memory use

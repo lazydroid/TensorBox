@@ -1,0 +1,1 @@
+python evaluate.py --weights output/lstm_rezoom_2017_08_10_23.09/save.ckpt-99999 --test_boxes data/brainwash/val_boxes.json

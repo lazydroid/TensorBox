@@ -76,12 +76,16 @@ def main():
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
     hypes_file = '%s/hypes.json' % os.path.dirname(args.weights)
+    
+    # constraint GPU memory use
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    
     with open(hypes_file, 'r') as f:
         H = json.load(f)
     expname = args.expname + '_' if args.expname else ''
     pred_boxes = '%s.%s%s' % (args.weights, expname, os.path.basename(args.test_boxes))
     true_boxes = '%s.gt_%s%s' % (args.weights, expname, os.path.basename(args.test_boxes))
-
 
     pred_annolist, true_annolist = get_results(args, H)
     pred_annolist.save(pred_boxes)
