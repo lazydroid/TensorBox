@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import __init__
 import json
 import cv2
 import tensorflow.contrib.slim as slim
@@ -27,25 +28,28 @@ random.seed(0)
 np.random.seed(0)
 
 from utils import train_utils, googlenet_load, tf_concat
+from lstm import BasicLSTMCell
 
 @ops.RegisterGradient("Hungarian")
 def _hungarian_grad(op, *args):
     return map(array_ops.zeros_like, op.inputs)
 
-def lstm_cell(H):
-    return rnn_cell.BasicLSTMCell(H['lstm_size'], forget_bias=0.0, state_is_tuple=True)
+def lstm_cell(H, lstm_type):
+    #return rnn_cell.BasicLSTMCell(H['lstm_size'], forget_bias=0.0, state_is_tuple=True)
+    return BasicLSTMCell(H['lstm_size'], forget_bias=0.0,
+                         lstm_type=lstm_type, state_is_tuple=True)
 
-def build_lstm_inner(H, lstm_input):
+def build_lstm_inner(H, lstm_input, lstm_type):
     '''
     build lstm decoder
     '''
     #lstm_cell = rnn_cell.BasicLSTMCell(H['lstm_size'], forget_bias=0.0, state_is_tuple=True)
     if H['num_lstm_layers'] > 1:
         #lstm = rnn_cell.MultiRNNCell([lstm_cell] * H['num_lstm_layers'], state_is_tuple=True)
-        lstm = rnn_cell.MultiRNNCell([lstm_cell(H) for _ in range(H['num_lstm_layers'])])
+        lstm = rnn_cell.MultiRNNCell([lstm_cell(H, lstm_type) for _ in range(H['num_lstm_layers'])])
     else:
         #lstm = lstm_cell
-        lstm = lstm_cell(H)
+        lstm = lstm_cell(H, lstm_type)
 
     batch_size = H['batch_size'] * H['grid_height'] * H['grid_width']
     state = lstm.zero_state(batch_size, tf.float32)
@@ -122,7 +126,7 @@ def rezoom(H, pred_boxes, early_feat, early_feat_channels, w_offsets, h_offsets)
                        H['rnn_len'],
                        len(w_offsets) * len(h_offsets) * early_feat_channels])
 
-def build_forward(H, x, phase, reuse):
+def build_forward(H, x, phase, reuse, lstm_type='origin'):
     '''
     Construct the forward model
     '''
@@ -166,7 +170,7 @@ def build_forward(H, x, phase, reuse):
         scale_down = 0.01
         lstm_input = tf.reshape(cnn * scale_down, (H['batch_size'] * grid_size, H['later_feat_channels']))
         if H['use_lstm']:
-            lstm_outputs = build_lstm_inner(H, lstm_input)
+            lstm_outputs = build_lstm_inner(H, lstm_input, lstm_type)
         else:
             lstm_outputs = build_overfeat_inner(H, lstm_input)
 

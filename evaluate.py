@@ -2,6 +2,7 @@ import tensorflow as tf
 import os
 import json
 import subprocess
+import time
 from scipy.misc import imread, imresize
 from scipy import misc
 
@@ -22,13 +23,13 @@ def get_results(args, H):
     tf.reset_default_graph()
     x_in = tf.placeholder(tf.float32, name='x_in', shape=[H['image_height'], H['image_width'], 3])
     if H['use_rezoom']:
-        pred_boxes, pred_logits, pred_confidences, pred_confs_deltas, pred_boxes_deltas = build_forward(H, tf.expand_dims(x_in, 0), 'test', reuse=None)
+        pred_boxes, pred_logits, pred_confidences, pred_confs_deltas, pred_boxes_deltas = build_forward(H, tf.expand_dims(x_in, 0), 'test', reuse=None, lstm_type=args.lstm_type)
         grid_area = H['grid_height'] * H['grid_width']
         pred_confidences = tf.reshape(tf.nn.softmax(tf.reshape(pred_confs_deltas, [grid_area * H['rnn_len'], 2])), [grid_area, H['rnn_len'], 2])
         if H['reregress']:
             pred_boxes = pred_boxes + pred_boxes_deltas
     else:
-        pred_boxes, pred_logits, pred_confidences = build_forward(H, tf.expand_dims(x_in, 0), 'test', reuse=None)
+        pred_boxes, pred_logits, pred_confidences = build_forward(H, tf.expand_dims(x_in, 0), 'test', reuse=None, lstm_type=args.lstm_type)
     saver = tf.train.Saver()
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -63,6 +64,7 @@ def get_results(args, H):
     return pred_annolist, true_annolist
 
 def main():
+    start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', required=True)
     parser.add_argument('--expname', default='')
@@ -73,6 +75,7 @@ def main():
     parser.add_argument('--tau', default=0.25, type=float)
     parser.add_argument('--min_conf', default=0.2, type=float)
     parser.add_argument('--show_suppressed', default=True, type=bool)
+    parser.add_argument('--lstm_type', default='origin')
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
     hypes_file = '%s/hypes.json' % os.path.dirname(args.weights)
@@ -104,6 +107,6 @@ def main():
         print('output results at: %s' % plot_output)
     except Exception as e:
         print(e)
-
+    print("[Info] Elapsed time: %.f s" % (time.time()-start_time))
 if __name__ == '__main__':
     main()
