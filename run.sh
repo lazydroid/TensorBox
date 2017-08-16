@@ -14,9 +14,9 @@
 #
 ####################################################
 GPU_ID=0
-sigmoid_type=DCT_LUT_4
+sigmoid_type=AREAS
 tanh_type=AREAS
-lstm_type=origin
+lstm_type=tanh_diy
 
 # function for change sigmoid type
 function SetSigmoidType()
@@ -39,7 +39,7 @@ function SetTanhType()
 }
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-cd utils/activation_util/sigmoid
+cd activation_util/sigmoid
 SetSigmoidType $sigmoid_type
 ./compile.sh |& tee log
 
@@ -74,5 +74,5 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "LSTM mode: $lstm_type"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-cd ../../../
+cd ../../
 python evaluate.py --lstm_type=$lstm_type --weights output/lstm_rezoom_2017_08_11_23.58/save.ckpt-800000 --test_boxes data/brainwash/val_boxes.json --gpu $GPU_ID 
