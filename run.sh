@@ -16,12 +16,14 @@
 ####################################################
 GPU_ID=1
 
-bit_width=16
-fraction_length=12
+lstm_type=$1
 
-sigmoid_type=AREAS
-tanh_type=AREAS
-lstm_type=tanh_diy
+sigmoid_type=$2
+tanh_type=$2
+
+bit_width=$3
+fraction_length=$4
+
 
 # function for change sigmoid type
 function SetSigmoidType()
@@ -112,4 +114,4 @@ echo "LSTM mode: $lstm_type"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 cd ../../
-python evaluate.py --lstm_type=$lstm_type --weights output/lstm_rezoom_2017_08_11_23.58/save.ckpt-800000 --test_boxes data/brainwash/val_boxes.json --gpu $GPU_ID 
+python evaluate.py --lstm_type=$lstm_type --weights output/lstm_rezoom_2017_08_11_23.58/save.ckpt-800000 --test_boxes data/brainwash/val_boxes.json --gpu $GPU_ID |& tee log_eva
